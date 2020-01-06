@@ -1,5 +1,5 @@
 class Mips
-  attr_accessor :grid, :inputs, :state, :outputs
+  attr_accessor :grid, :inputs, :state, :outputs, :gtk
 
   def tick
     defaults
@@ -16,8 +16,6 @@ class Mips
     state.register_count ||= [     1,    1,   2,   4,   8,   8,   2,   2,    1,    1,    1,    1,  32]
 
     create_register_hash() if state.register_hash.length == 0
-
-    #state.render_state = 
   end
 
   def create_register_hash
@@ -63,7 +61,7 @@ class Mips
   end
 
   def calc
-
+    input = gtk.read_file("input.txt")
   end
 
   def process_inputs
@@ -79,5 +77,6 @@ def tick args
     $mips.inputs  = args.inputs
     $mips.state   = args.state
     $mips.outputs = args.outputs
+    $mips.gtk     = args.gtk
     $mips.tick
 end
