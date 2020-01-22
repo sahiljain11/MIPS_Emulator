@@ -17,10 +17,11 @@ class Mips
     state.register_count ||= [     1,    1,   2,   4,   8,   8,   2,   2,    1,    1,    1,    1,  32]
     state.current_line   ||= -1
     state.input          ||= gtk.read_file("app/input.txt").split("\r\n")
+    state.output_state   ||= :none
 
     create_register_hash() if state.register_hash.length == 0
     create_function_hash() if state.function_hash.length == 0
-    process_function() if state.current_line == -1
+    #process_function()     if state.current_line == -1
   end
 
   def create_register_hash
@@ -87,25 +88,35 @@ class Mips
   end
 
   def calc
+    state.current_line = [state.current_line, state.input.length - 1].min
 
   end
 
   def process_inputs
-    if inputs.keyboard.space && state.current_line + 1 != state.inputs.length
+    if inputs.keyboard.space && state.current_line + 1 != state.input.length
       process_function()
     end
   end
 
   def process_function
-      state.curent_line += 1
-      current_line = state.inputs[state.current_line].split(" ")
+    if state.output_state != :end_of_file && state.output_state != :error
+      state.current_line += 1
+      state.current_line += 1 while state.input[state.current_line] == "" && state.input[state.current_line] == "\r\n"
 
-      if state.function_hash.has_key?(current_line[0])
-        #Execute said function
-        determine_function(current_line[0], current_line[1].chop, current_line[2]) #chop removes the comma
+      current_line = state.input[state.current_line].split(" ")
+
+      if current_line == ""
+        #Reached End of File
+        state.output_state = :end_of_file
       else
-        #It's a variable
+        if state.function_hash.has_key?(current_line[0])
+          #Execute said function
+          determine_function(current_line[0], current_line[1].chop, current_line[2]) #chop removes the comma
+        else
+          #It's a variable
+        end
       end
+    end
   end
 
   def determine_function (func, param1, param2)
@@ -113,7 +124,7 @@ class Mips
   end
 
   def li (var, integer)
-    index = state.register_hash.fetch(param1)
+    index = state.register_hash.fetch(var)
     state.registers[index] = integer
   end
   
