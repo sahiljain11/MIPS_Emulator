@@ -12,11 +12,12 @@ class Mips
   end
 
   def defaults
-    state.num_registers  ||= 64   #32 integer and logic instructions and 32 floating point instructions
+    state.num_registers   ||= 64   #32 integer and logic instructions and 32 floating point instructions
     state.registers       ||= Array.new(state.num_registers)
     state.register_hash   ||= Hash.new
     state.function_hash   ||= Hash.new   #present for faster computation
     state.variable_hash   ||= Hash.new
+    state.method_hash     ||= Hash.new   #present for user generated methods
     state.register_names  ||= ["zero", "at", "v", "a", "t", "s", "t", "k", "gp", "sp", "fp", "ra", "f"]
     state.register_count  ||= [     1,    1,   2,   4,   8,   8,   2,   2,    1,    1,    1,    1,  32]
     state.current_line    ||= -1
@@ -29,6 +30,7 @@ class Mips
 
     create_register_hash() if state.register_hash.length == 0
     create_function_hash() if state.function_hash.length == 0
+    create_method_hash()   if state.current_line == -1
     process_function()     if state.current_line == -1
   end
 
@@ -51,8 +53,22 @@ class Mips
   end
 
   def create_function_hash
+    #numbers aren't important here. adding to hash is important though
+    #remember to implement these functions near the bottom of the code
     state.function_hash["li"]   = 0
-    state.function_hash["move"] = 0
+    state.function_hash["move"] = 1
+  end
+
+  def create_method_hash
+    #Go through entire text file. If there's a ".foo", add that method
+    #and its line number to the hash (also technically just conduct a jump
+    #command, but hash simplifies this
+    (state.input.length).times do |n|
+      line = state.input[n].split(" ")
+      if (line.length == 1 && line[0][0] == '.')
+        state.method_hash[line[0]] = n
+      end
+    end
   end
 
   def render
@@ -191,6 +207,9 @@ class Mips
           elsif is_variable?(current_line[0])
             #making a variable
             state.variable_hash[current_line[0][0, current_line[0].length - 1]] = current_line[2]
+          elsif state.method_hash.has_key?(current_line[0])
+            #skip! the hash already has the method in it, so ignore it
+            #if a function calls this, it'll go here
           end
         end
 
@@ -206,6 +225,8 @@ class Mips
   end
 
   def determine_function (func, param1, param2)
+    #call on the function given by what the file is asking to do
+    #any flags that should be checked can be done below in the functions themselves
     li(param1, param2)   if func == "li"
     move(param1, param2) if func == "move"
   end
@@ -217,15 +238,8 @@ class Mips
   def move(var1, var2)
     hash_check1 = var1 if state.register_hash.key?(var1)
 
-    puts("----------------------------")
     hash_check2 = state.variable_hash.fetch(var2) if state.variable_hash.key?(var2)
     hash_check2 = state.registers[state.register_hash.fetch(var2)] if state.register_hash.key?(var2)
-    puts(hash_check2.to_s)
-    puts(state.register_hash.fetch(var2))
-    puts(var1)
-    puts(var2)
-    puts("----------------------------")
-    puts("NOT WORKING RIGHTTTTTTT")
 
     if (hash_check1 == nil || hash_check2 == nil)
       state.console_state = :error
