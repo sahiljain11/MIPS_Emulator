@@ -1,6 +1,6 @@
 # MIPS Emulator
 
-![Render](https://github.com/sahiljain11/MIPS_Emulator/render.PNG)
+![Render](/render.PNG)
 
 ## About
 
