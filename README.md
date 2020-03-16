@@ -6,6 +6,12 @@
 
 In this app, I created a basic MIPS emulator package for developers interested in working with MIPS scripts within DragonRuby.
 
+To play around with this, place your MIPS code within input.txt. Note that all necessary functions will need to be added in order to ensure that everything runs as expected.
+
+### Controls
+
+To navigate through the code, either press the spacebar key or click the button on the top right of the screen. For space, only 32 registers are shown at a time. To see the other 32 registers, press the button slightly to the left of the label "Registers" or press either the 1 or 2 key.
+
 ## Development
 
 To work on this, I added three basic things: labels, functions, and variables.
